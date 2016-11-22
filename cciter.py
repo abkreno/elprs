@@ -1,15 +1,18 @@
 import numpy as np
-from utils import inBounds, checkValid, newR, newC
+from utils import inBounds, countMissMatchedLabels
 
-def connectedComponentsBin(image=None):
-    if(image is None):
-        print('Error no image data')
-    max_label     = 2000
+newR = [ 0, -1, -1, -1]
+newC = [-1, -1,  0,  1]
+
+def connectedComponentsIter(color_class=None, max_label=None):
+    if(color_class is None):
+        print('Error no color_class data')
+
     label         = 1 #start labeling from 1
-    labels        = np.zeros(image.shape, np.int16)
+    labels        = np.zeros(color_class.shape, np.int16)
     is_same_label = np.zeros(max_label  , np.int16)
-    max_rows      = image.shape[0]
-    max_cols      = image.shape[1]
+    max_rows      = color_class.shape[0]
+    max_cols      = color_class.shape[1]
 
     is_same_label.fill(10000)
     labels.fill(10000)
@@ -22,7 +25,7 @@ def connectedComponentsBin(image=None):
                 nrow = row + newR[k]
                 ncol = col + newC[k]
                 if(inBounds(nrow,ncol,max_rows,max_cols)):
-                        if(image[nrow,ncol] == image[row,col]):
+                        if(color_class[nrow,ncol] == color_class[row,col]):
                             if(foundMatch):
                                 minLabel = min(labels[nrow,ncol], labels[row,col])
                                 minLabel = min(minLabel, is_same_label[labels[nrow,ncol]])

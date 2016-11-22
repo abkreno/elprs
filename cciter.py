@@ -1,5 +1,5 @@
 import numpy as np
-from utils import inBounds, countMissMatchedLabels
+from utils import inBounds
 
 newR = [ 0, -1, -1, -1]
 newC = [-1, -1,  0,  1]

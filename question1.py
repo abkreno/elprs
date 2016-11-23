@@ -9,7 +9,6 @@ img = cv2.imread('images/L1.jpg',0)
 ret,binary_image = cv2.threshold(img,127,255,cv2.THRESH_BINARY) #CONVERTING L1.jpg TO BINARY
 
 img2 = cv2.imread('images/L3.jpg',0)
-#filling the image with colors according to labels
 #labels_dfs = connectedComponentsDfs(getColorClasses(binary_image), 2000)
 
 max_rows      = img2.shape[0]

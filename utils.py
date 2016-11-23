@@ -32,6 +32,7 @@ def showImage(title='Image', image=None):
     cv2.imshow(title,image)
     cv2.waitKey(0)
 
+#filling the image with colors according to labels
 def applyLabelColors(labels=None, colors=None, max_rows=None, max_cols=None):
         result_image = np.zeros((max_rows,max_cols,3), np.uint8)
         for row in range(max_rows):
@@ -44,3 +45,21 @@ def generateRandomColors(limit=0):
     for i in range(limit):
         colors.append((randint(0,255),randint(0,255),randint(0,255)))
     return colors
+
+#return True if rect1 is inside rect2 or vice versa
+def interHorz(rect1=None, rect2=None):
+    X1 = rect1[0]
+    W1 = rect1[2]
+
+    X2 = rect2[0]
+    W2 = rect2[2]
+
+    if (X1+W1<X2 or X2+W2<X1):
+        return False
+    else:
+        return True
+
+def findRectArea(rect=None):
+    W = rect[2]
+    H = rect[3]
+    return H * W

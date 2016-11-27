@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from random import randint
 
@@ -35,9 +36,10 @@ def showImage(title='Image', image=None):
 #filling the image with colors according to labels
 def applyLabelColors(labels=None, colors=None, max_rows=None, max_cols=None):
         result_image = np.zeros((max_rows,max_cols,3), np.uint8)
+        length       = len(colors)
         for row in range(max_rows):
             for col in range(max_cols):
-                result_image[row,col] = colors[labels[row,col]%2000]
+                result_image[row,col] = colors[labels[row,col]%length]
         return result_image
 
 def generateRandomColors(limit=0):
@@ -63,3 +65,12 @@ def findRectArea(rect=None):
     W = rect[2]
     H = rect[3]
     return H * W
+
+#Calculates the Mean Squared Error between 2 images
+def mse(imageA, imageB):
+	# NOTE: the two images must have the same dimension
+	err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+	err /= float(imageA.shape[0] * imageA.shape[1])
+	# return the MSE, the lower the error, the more "similar"
+	# the two images are
+	return err

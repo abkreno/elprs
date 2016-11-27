@@ -37,24 +37,39 @@ def getContours(im=None):
             res_contours.append(contours[ind])
     return res_contours
 
-def getSubImage(boundBox=None ,image=None):
+def getSubImage(boundBox=None ,image=None, yUp=0, yDown=0):
     x = boundBox[0]
-    y = boundBox[1]
+    y = boundBox[1] - yUp
+    y = max(y,0)
     w = boundBox[2]
-    h = boundBox[3]
+    h = boundBox[3] + yUp + yDown
     return image[y:y+h,x:x+w]
 
 arabicAlphabet   = ('أ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ى').split(" ")
 image            = cv2.imread('library/arabic-digits.jpg')
 digitsContours = getContours(image)
-alphapetContours = []
-sub_image        = getSubImage(cv2.boundingRect(digitsContours[1]),image)
-cv2.drawContours(image, digitsContours, 1, (0,255,0), 3)
-showImage("Sub Image", sub_image)
+digitsImages   = []
+for contour in digitsContours:
+    sub_image        = getSubImage(cv2.boundingRect(contour),image)
+    digitsImages.append(sub_image)
+fig = plt.figure()
+alphapetImages = []
+#          ى   و   ه   ن   م   ل  ك   ق   ف  غ   ع   ظ  ط  ض  ص  ش  س   ز   ر   ذ   د   خ   ح   ج   ث   ت  ب   أ
+yUps   = [ 0,  0, 15, 20,  0,  0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+yDowns = [ 0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+count = 0
+for i in range(4):
+    path     = 'library/arabic-alphabet-'+str(i+1)+'.png'
+    im       = cv2.imread(path)
+    contours = getContours(im)
+    for contour in contours:
+        sub_image = getSubImage(cv2.boundingRect(contour),im,yUp=yUps[count],yDown=yDowns[count])
+        alphapetImages.append(sub_image)
+        count += 1
+count = 1
+for image in alphapetImages:
+    fig.add_subplot(6,6,count)
+    plt.imshow(image, cmap='gray')
+    count+=1
 
-# for i in range(4):
-#     path     = 'library/arabic-alphabet-'+str(i+1)+'.png'
-#     im       = cv2.imread(path)
-#     contours,rects = getContours(im)
-#     alphapetContours.append(contours)
-#     alphapetRects.append(rects)
+plt.show()

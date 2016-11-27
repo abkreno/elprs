@@ -45,17 +45,43 @@ def getSubImage(boundBox=None ,image=None, yUp=0, yDown=0):
     h = boundBox[3] + yUp + yDown
     return image[y:y+h,x:x+w]
 
-arabicAlphabet   = ('أ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ى').split(" ")
-image            = cv2.imread('library/arabic-digits.jpg')
-digitsContours = getContours(image)
-digitsImages   = []
+def getBestMatchIndex(input_image, boundingRect, subImage, arabicTemplates, yUps, yDowns):
+    bestError,result,index = 1000000,0,0
+    yUps = np.concatenate((np.zeros(10),yUps),axis=1)
+    yDowns = np.concatenate((np.zeros(10),yDowns),axis=1)
+    for image in arabicTemplates:
+            subImage = getSubImage(boundingRect ,input_image,yUp=yUps[index],yDown=yDowns[index])
+            subImage = cv2.cvtColor(subImage,cv2.COLOR_BGR2GRAY)
+            height,width = subImage.shape
+            image = cv2.resize(image,(width, height), interpolation = cv2.INTER_CUBIC)
+            image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+            #ret,image = cv2.threshold(image,127,255,0)
+            mseError = mse(subImage, image)
+            if(mseError < bestError):
+                bestError = mseError
+                result = index
+            index+=1
+    return result
+
+arabicAlphabet  = ('1 2 3 4 5 6 7 8 9 0 أ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ى').split(" ")
+arabicTemplates = []
+
+arrow           = cv2.imread('images/arrow.jpeg')
+
+image           = cv2.imread('library/arabic-digits.jpg')
+digitsContours  = getContours(image)
+count = 0
 for contour in digitsContours:
-    sub_image        = getSubImage(cv2.boundingRect(contour),image)
-    digitsImages.append(sub_image)
+    subImage        = getSubImage(cv2.boundingRect(contour),image)
+    arabicTemplates.append(subImage)
+    count+=1
+    if(count>9):
+        break
 fig = plt.figure()
-alphapetImages = []
+
 #          ى   و   ه   ن   م   ل  ك   ق   ف  غ   ع   ظ  ط  ض  ص  ش  س   ز   ر   ذ   د   خ   ح   ج   ث   ت  ب   أ
-yUps   = [ 0,  0, 15, 20,  0,  0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+#          --------------------------------------------------------------------------------------------------------------
+yUps   = [ 0,  0, 15, 20,  0,  0, 20,  0, 20,  0, 20,  0, 20,  0, 20,  0,  0,  0, 20, 20, 20, 20,  0,  0, 20,  0,  0,  0]
 yDowns = [ 0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
 count = 0
 for i in range(4):
@@ -63,13 +89,43 @@ for i in range(4):
     im       = cv2.imread(path)
     contours = getContours(im)
     for contour in contours:
-        sub_image = getSubImage(cv2.boundingRect(contour),im,yUp=yUps[count],yDown=yDowns[count])
-        alphapetImages.append(sub_image)
+        subImage = getSubImage(cv2.boundingRect(contour),im,yUp=yUps[count],yDown=yDowns[count])
+        arabicTemplates.append(subImage)
         count += 1
+# count = 1
+# for image in arabicTemplates:
+#     fig.add_subplot(6,7,count)
+#     plt.axis("off")
+#     plt.imshow(image, cmap='gray')
+#     count+=1
+# plt.show()
+height = 325
+width  = 669
+#path = input("Enter the path to the image e.g \'images/L1.jpg\'\n\n")
+input_image = cv2.imread('images/Test3.jpg')
+input_image = cv2.resize(input_image,(width, height), interpolation = cv2.INTER_CUBIC)
+input_image = np.concatenate((input_image[130:height-10,20:300],input_image[130:height-10,350:width-20]),axis=1)
+input_contours = getContours(input_image)
 count = 1
-for image in alphapetImages:
-    fig.add_subplot(6,6,count)
-    plt.imshow(image, cmap='gray')
+
+for contour in input_contours:
+    boundingRect = cv2.boundingRect(contour)
+    index     = getBestMatchIndex(input_image, boundingRect, subImage, arabicTemplates, yUps, yDowns)
+    subImage = getSubImage(boundingRect ,input_image)
+    print(arabicAlphabet[index])
+    fig.add_subplot(8,3,count)
+    plt.axis("off")
+    plt.imshow(subImage, cmap='gray')
     count+=1
+    fig.add_subplot(8,3,count)
+    plt.axis("off")
+    plt.imshow(arrow, cmap='gray')
+    count+=1
+    fig.add_subplot(8,3,count)
+    plt.axis("off")
+    plt.imshow(arabicTemplates[index], cmap='gray')
+    count+=1
+    if(count>24):
+        break
 
 plt.show()
